@@ -31,7 +31,7 @@ from torch.nn.parallel import DistributedDataParallel as NativeDDP
 from timm.data import Dataset, create_loader, resolve_data_config, Mixup, FastCollateMixup, AugMixDataset
 from timm.models import create_model, resume_checkpoint, load_checkpoint, convert_splitbn_model
 from timm.utils import *
-from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy, JsdCrossEntropy, BiTemperedLogisticLoss, FocalLoss, FocalCosineLoss, TaylorCrossEntropyLoss
+from timm.loss import create_loss
 from timm.optim import create_optimizer
 from timm.scheduler import create_scheduler
 from timm.utils import ApexScaler, NativeScaler
@@ -109,7 +109,13 @@ parser.add_argument('--weight-decay', type=float, default=0.0001,
 parser.add_argument('--clip-grad', type=float, default=None, metavar='NORM',
                     help='Clip gradient norm (default: None, no clipping)')
 
-
+# Loss parameters
+parser.add_argument('--loss', default='sgd', type=str, metavar='LOSS',
+                    help='Loss (default: "normal"')
+parser.add_argument('--t1', type=float, default=1,
+                    help='btloss t1 (default: 1)')
+parser.add_argument('--t2', type=float, default=1,
+                    help='btloss t2 (default: 1)')
 
 # Learning rate schedule parameters
 parser.add_argument('--sched', default='step', type=str, metavar='SCHEDULER',
@@ -514,23 +520,9 @@ def main():
         crop_pct=data_config['crop_pct'],
         pin_memory=args.pin_mem,
     )
-
+    
     # setup loss function
-    if args.jsd:
-        assert num_aug_splits > 1  # JSD only valid with aug splits set
-        train_loss_fn = JsdCrossEntropy(num_splits=num_aug_splits, smoothing=args.smoothing).cuda()
-    elif mixup_active:
-        # smoothing is handled with mixup target transform
-        train_loss_fn = SoftTargetCrossEntropy().cuda()
-    elif args.smoothing:
-        #train_loss_fn = LabelSmoothingCrossEntropy(smoothing=args.smoothing).cuda()
-        #train_loss_fn = TaylorCrossEntropyLoss().cuda()
-        train_loss_fn = BiTemperedLogisticLoss(smoothing=args.smoothing).cuda()
-        #train_loss_fn = FocalCosineLoss().cuda()
-        #train_loss_fn = FocalLoss().cuda()
-        
-    else:
-        train_loss_fn = nn.CrossEntropyLoss().cuda()
+    train_loss_fn = create_loss(args).cuda()
     validate_loss_fn = nn.CrossEntropyLoss().cuda()
 
     # setup checkpoint saver and eval metric tracking

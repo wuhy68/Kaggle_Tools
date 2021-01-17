@@ -9,6 +9,5 @@ from .nvnovograd import NvNovoGrad
 from .radam import RAdam
 from .rmsprop_tf import RMSpropTF
 from .sgdp import SGDP
-from .sam import SAM
 
 from .optim_factory import create_optimizer

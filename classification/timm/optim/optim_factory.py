@@ -14,7 +14,6 @@ from .nvnovograd import NvNovoGrad
 from .radam import RAdam
 from .rmsprop_tf import RMSpropTF
 from .sgdp import SGDP
-from .sam import SAM
 
 try:
     from apex.optimizers import FusedNovoGrad, FusedAdam, FusedLAMB, FusedSGD
@@ -81,8 +80,6 @@ def create_optimizer(args, model, filter_bias_and_bn=True):
         optimizer = AdamP(parameters, wd_ratio=0.01, nesterov=True, **opt_args)
     elif opt_lower == 'sgdp':        
         optimizer = SGDP(parameters, momentum=args.momentum, nesterov=True, **opt_args)
-    elif opt_lower == 'sam':        
-        optimizer = SAM(parameters, **opt_args)
     elif opt_lower == 'adadelta':
         optimizer = optim.Adadelta(parameters, **opt_args)
     elif opt_lower == 'adafactor':

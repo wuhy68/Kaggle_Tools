@@ -236,7 +236,7 @@ def bi_tempered_logistic_loss(activations,
         return loss_values.mean()
 
 class BiTemperedLogisticLoss(nn.Module): 
-    def __init__(self, t1 = 0.2, t2 = 1.2, smoothing=0.1): 
+    def __init__(self, t1 = 1, t2 = 1, smoothing=0.1): 
         super(BiTemperedLogisticLoss, self).__init__() 
         self.t1 = t1
         self.t2 = t2

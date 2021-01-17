@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=7 python validate.py ../datasets/2019/train --model efficientnet_b4 --checkpoint output/train/20210112-100121-efficientnet_b4-512/model_best.pth.tar --img-size 512 --batch-size 32 --num-classes 5 --no-test-pool
